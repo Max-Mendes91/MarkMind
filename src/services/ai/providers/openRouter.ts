@@ -12,7 +12,7 @@ export const callOpenRouter = async (
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'openai/gpt-4o-mini',
+      model: 'anthropic/claude-haiku-4.5',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

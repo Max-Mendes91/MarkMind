@@ -4,7 +4,7 @@ import { LOADING_MESSAGES, getNextLoadingMessage } from '../../config/loadingMes
 import { type StatusType } from '../../types/common';
 import { type FolderDataForAI, type PendingSuggestion } from '../../types/bookmarks';
 import { type PageMetadata } from '../../types/pages';
-import { getFolderDataForAI, findFolderPathById } from '../../utils/folders';
+import { getFolderDataForAI, findFolderPathById, resolveAIFolderPath } from '../../utils/folders';
 import { organizeBookmark } from '../../services/ai';
 import { getCurrentPageData } from '../../services/pageMetadata';
 import { findBookmarkByUrl, createBookmark, createFolderPath } from '../../services/bookmarks';
@@ -150,22 +150,22 @@ export const useOrganizeBookmark = (): UseOrganizeBookmarkReturn => {
         folderTree: folderData.textTree,
       });
 
-      const folderId = folderData.pathToIdMap[aiResponse.folderPath];
+      const resolvedPath = resolveAIFolderPath(aiResponse.folderPath, folderData.pathToIdMap);
+      const folderId = folderData.pathToIdMap[resolvedPath];
+      const isNewFolder = !folderId;
 
       setPendingSuggestion({
         pageTitle: currentPageData.title,
         pageUrl: currentPageData.url,
-        folderPath: aiResponse.folderPath,
+        folderPath: resolvedPath,
         folderId: folderId || null,
-        isNewFolder: aiResponse.isNewFolder,
+        isNewFolder,
       });
 
       if (folderId) {
-        showStatus(`Suggested: ${aiResponse.folderPath}`, 'default');
-      } else if (aiResponse.isNewFolder) {
-        showStatus(`New folder: ${aiResponse.folderPath}`, 'default');
+        showStatus(`Suggested: ${resolvedPath}`, 'default');
       } else {
-        showStatus(`Folder not found: ${aiResponse.folderPath}`, 'error');
+        showStatus(`New folder: ${resolvedPath}`, 'default');
       }
     } catch (error) {
       console.error('Error organizing page:', error);
@@ -184,18 +184,13 @@ export const useOrganizeBookmark = (): UseOrganizeBookmarkReturn => {
       setIsOrganizing(true);
       let targetFolderId = pendingSuggestion.folderId;
 
-      if (pendingSuggestion.isNewFolder && !targetFolderId) {
+      if (!targetFolderId) {
         showStatus(`Creating folder: ${pendingSuggestion.folderPath}`, 'default');
         targetFolderId = await createFolderPath(
           pendingSuggestion.folderPath,
           folderDataRef.current.pathToIdMap,
           folderDataRef.current.defaultParentId
         );
-      }
-
-      if (!targetFolderId) {
-        showStatus('Could not determine target folder', 'error');
-        return;
       }
 
       showStatus('Saving bookmark...', 'default');

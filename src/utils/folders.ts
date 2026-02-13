@@ -49,6 +49,37 @@ const buildTreeLines = (
   });
 };
 
+// AI may return partial or misnamed paths — resolve against the full map
+export const resolveAIFolderPath = (aiPath: string, pathToIdMap: FolderPathMap): string => {
+  const segments = aiPath.split('/');
+  const mapKeys = Object.keys(pathToIdMap);
+
+  // Try matching progressively shorter prefixes from the left
+  for (let prefixLength = segments.length; prefixLength >= 1; prefixLength--) {
+    const prefix = segments.slice(0, prefixLength).join('/');
+    const match = mapKeys.find(
+      key => key === prefix || key.endsWith('/' + prefix)
+    );
+    if (match) {
+      const remaining = segments.slice(prefixLength).join('/');
+      return remaining ? `${match}/${remaining}` : match;
+    }
+  }
+
+  // Fallback: try suffixes from the right (handles wrong root folder name)
+  for (let startIndex = 1; startIndex < segments.length; startIndex++) {
+    const suffix = segments.slice(startIndex).join('/');
+    const match = mapKeys.find(
+      key => key === suffix || key.endsWith('/' + suffix)
+    );
+    if (match) {
+      return match;
+    }
+  }
+
+  return aiPath;
+};
+
 const MAX_VISIBLE_SEGMENTS = 3;
 
 export const getDisplaySegments = (folderPath: string): FolderDisplaySegment[] => {
@@ -77,7 +108,7 @@ export const getDisplaySegments = (folderPath: string): FolderDisplaySegment[] =
 
 export const findFolderPathById = (pathToIdMap: FolderPathMap, folderId: string): string | null => {
   const entry = Object.entries(pathToIdMap).find(([, id]) => id === folderId);
-  return entry ? entry[0] : null;
+  return entry ? entry[0] : null
 };
 
 export const getFolderDataForAI = async (): Promise<FolderDataForAI> => {
