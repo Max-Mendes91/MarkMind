@@ -49,6 +49,24 @@ const buildTreeLines = (
   });
 };
 
+// AI may return partial paths missing the root folder prefix — resolve against the full map
+export const resolveAIFolderPath = (aiPath: string, pathToIdMap: FolderPathMap): string => {
+  const segments = aiPath.split('/');
+
+  for (let prefixLength = segments.length; prefixLength >= 1; prefixLength--) {
+    const prefix = segments.slice(0, prefixLength).join('/');
+    const match = Object.keys(pathToIdMap).find(
+      key => key === prefix || key.endsWith('/' + prefix)
+    );
+    if (match) {
+      const remaining = segments.slice(prefixLength).join('/');
+      return remaining ? `${match}/${remaining}` : match;
+    }
+  }
+
+  return aiPath;
+};
+
 const MAX_VISIBLE_SEGMENTS = 3;
 
 export const getDisplaySegments = (folderPath: string): FolderDisplaySegment[] => {
@@ -77,7 +95,7 @@ export const getDisplaySegments = (folderPath: string): FolderDisplaySegment[] =
 
 export const findFolderPathById = (pathToIdMap: FolderPathMap, folderId: string): string | null => {
   const entry = Object.entries(pathToIdMap).find(([, id]) => id === folderId);
-  return entry ? entry[0] : null;
+  return entry ? entry[0] : null
 };
 
 export const getFolderDataForAI = async (): Promise<FolderDataForAI> => {

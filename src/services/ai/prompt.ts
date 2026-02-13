@@ -16,11 +16,12 @@ CRITICAL RULES:
 10. NEVER use generic folders like "Other Bookmarks" if a better option exists
 
 RESPONSE FORMAT:
-- Return the EXACT folder path using "/" as separator, matching folder names from the hierarchy exactly
-- Example: if the tree shows Bookmarks > Development Tools > Git, return "Bookmarks/Development Tools/Git"
-- If new folder needed: return "NEW: FolderName" (e.g., "NEW: Entertainment")
-- If new subfolder in existing folder: return "NEW: ParentFolder/NewSubfolder" (e.g., "NEW: Development Tools/Frameworks")
-- Return ONLY the path, no explanation`;
+- ALWAYS return the FULL folder path from the root using "/" as separator
+- The path MUST start from the top-level folder shown in the hierarchy (e.g., "Bookmarks Bar/Development Tools", NOT just "Development Tools")
+- For existing folders: return the exact full path (e.g., "Bookmarks Bar/Development Tools/Git")
+- If new folder needed: return "NEW: TopFolder/NewFolder" (e.g., "NEW: Bookmarks Bar/Entertainment")
+- If new subfolder in existing folder: return "NEW: TopFolder/ExistingFolder/NewSubfolder" (e.g., "NEW: Bookmarks Bar/Development Tools/Frameworks")
+- Return ONLY the full path, no explanation`;
 
 export const buildUserPrompt = (request: AIOrganizeRequest): string => {
   const parts = [
