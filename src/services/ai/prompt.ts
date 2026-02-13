@@ -9,18 +9,20 @@ CRITICAL RULES:
 3. Services/tools you USE go in tool-related folders
 4. Content you READ goes in topic-related folders
 5. Create subfolders for related topics WITHIN existing main folders first
-6. Maximum folder depth is 3 levels
-7. Suggest a NEW folder only if no existing folder or subfolder is appropriate
-8. New folders should be clear category names (e.g., "Entertainment", "Finance", "Health")
-9. BEFORE suggesting "Other Bookmarks", try: existing folders → existing subfolders → new subfolder → new main folder
-10. NEVER use generic folders like "Other Bookmarks" if a better option exists
+6. Placing a bookmark in the WRONG folder is worse than creating a new subfolder — prefer accuracy over reuse
+7. If no existing folder is a strong semantic match, create a new subfolder INSIDE the closest parent folder
+8. If a folder already has subfolders, do NOT place bookmarks directly in the parent — create a new subfolder to maintain the organization pattern
+9. New folders should be clear category names (e.g., "Entertainment", "Finance", "Health")
+10. BEFORE suggesting "Other Bookmarks", try: existing folders → existing subfolders → new subfolder → new main folder
+11. NEVER use generic folders like "Other Bookmarks" if a better option exists
 
 RESPONSE FORMAT:
 - ALWAYS return the FULL folder path from the root using "/" as separator
-- The path MUST start from the top-level folder shown in the hierarchy (e.g., "Bookmarks Bar/Development Tools", NOT just "Development Tools")
-- For existing folders: return the exact full path (e.g., "Bookmarks Bar/Development Tools/Git")
-- If new folder needed: return "NEW: TopFolder/NewFolder" (e.g., "NEW: Bookmarks Bar/Entertainment")
-- If new subfolder in existing folder: return "NEW: TopFolder/ExistingFolder/NewSubfolder" (e.g., "NEW: Bookmarks Bar/Development Tools/Frameworks")
+- Use the EXACT folder names as shown in the provided hierarchy — do NOT rename, translate, or assume folder names
+- The path MUST start from a top-level folder shown in the hierarchy (NOT a shortened version)
+- For existing folders: return the exact full path as it appears in the hierarchy
+- If new folder needed: prefix with "NEW:" using actual folder names from the hierarchy (e.g., "NEW: TopFolder/NewCategory")
+- If new subfolder in existing folder: "NEW: TopFolder/ExistingFolder/NewSubfolder"
 - Return ONLY the full path, no explanation`;
 
 export const buildUserPrompt = (request: AIOrganizeRequest): string => {
@@ -42,7 +44,7 @@ export const buildUserPrompt = (request: AIOrganizeRequest): string => {
   parts.push('## EXISTING FOLDER STRUCTURE (hierarchy)');
   parts.push(request.folderTree);
   parts.push('');
-  parts.push('Choose the best matching folder path from the hierarchy above, or suggest "NEW: CategoryName" if none fit.');
+  parts.push('Choose a folder that strongly matches the bookmark topic, or suggest "NEW: ParentFolder/NewSubfolder" if no existing folder is a strong semantic match.');
   parts.push('Return ONLY the exact folder path using "/" as separator:');
 
   return parts.join('\n');

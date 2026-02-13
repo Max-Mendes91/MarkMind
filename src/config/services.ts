@@ -85,7 +85,7 @@ export const SERVICES: Record<string, ServiceConfig> = {
         Authorization: `Bearer ${apiKey}`,
       }),
       getBody: () => ({
-        model: 'openai/gpt-4o-mini',
+        model: 'anthropic/claude-haiku-4.5',
         messages: [{ role: 'user', content: 'Hi' }],
         max_tokens: 5,
       }),

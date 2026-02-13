@@ -49,18 +49,31 @@ const buildTreeLines = (
   });
 };
 
-// AI may return partial paths missing the root folder prefix — resolve against the full map
+// AI may return partial or misnamed paths — resolve against the full map
 export const resolveAIFolderPath = (aiPath: string, pathToIdMap: FolderPathMap): string => {
   const segments = aiPath.split('/');
+  const mapKeys = Object.keys(pathToIdMap);
 
+  // Try matching progressively shorter prefixes from the left
   for (let prefixLength = segments.length; prefixLength >= 1; prefixLength--) {
     const prefix = segments.slice(0, prefixLength).join('/');
-    const match = Object.keys(pathToIdMap).find(
+    const match = mapKeys.find(
       key => key === prefix || key.endsWith('/' + prefix)
     );
     if (match) {
       const remaining = segments.slice(prefixLength).join('/');
       return remaining ? `${match}/${remaining}` : match;
+    }
+  }
+
+  // Fallback: try suffixes from the right (handles wrong root folder name)
+  for (let startIndex = 1; startIndex < segments.length; startIndex++) {
+    const suffix = segments.slice(startIndex).join('/');
+    const match = mapKeys.find(
+      key => key === suffix || key.endsWith('/' + suffix)
+    );
+    if (match) {
+      return match;
     }
   }
 
