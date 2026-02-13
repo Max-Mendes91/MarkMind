@@ -152,7 +152,7 @@ src/
 | `src/types/bookmarks.ts` | ChromeBookmarkNode, FolderDataForAI, FolderPathMap, PendingSuggestion |
 | `src/types/common.ts` | StatusType, StatusMessage |
 | `src/types/pages.ts` | PageMetadata |
-| `src/utils/folders.ts` | Builds ASCII folder tree and path-to-ID map for AI |
+| `src/utils/folders.ts` | Builds ASCII folder tree, path-to-ID map, resolveAIFolderPath, getDisplaySegments |
 | `src/utils/helpers.ts` | Reusable utility functions |
 | `src/utils/debug.ts` | Debug logging (silent in production builds) |
 | `src/styles/index.css` | Design tokens (all CSS variables) |
@@ -162,6 +162,17 @@ src/
 | `src/components/TabNavigation/` | Ghost pill tab bar (config-driven, easy to add tabs) |
 | `src/components/CurrentPageCard/` | Page info card with dynamic organize/accept/decline |
 | `src/components/tabs/` | One component per tab (HomeTab, OrganizeTab, InsightsTab, DiscoverTab) |
+
+---
+
+## AI Prompt Design Rules
+
+The system prompt in `src/services/ai/prompt.ts` controls how AI organizes bookmarks. Critical rules:
+
+- **NEVER hardcode folder names** (e.g., "Bookmarks Bar") in prompt examples — Chrome root folder names vary by locale/profile
+- **`isNewFolder` is derived from `!folderId`** (actual state), NOT from the AI's `NEW:` prefix
+- **`resolveAIFolderPath`** in `utils/folders.ts` is a safety net — tries prefix matching, then suffix fallback for misnamed root folders
+- **OpenRouter default model**: `anthropic/claude-haiku-4.5` (hardcoded for now, model selector planned)
 
 ---
 
